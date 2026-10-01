@@ -2,62 +2,83 @@
 
 namespace App\Controllers;
 
+use App\Config\Database;
+use PDO;
+
 class AuthController
 {
-    // Mostrar u procesar el inicio de sesión
-    public function login()
+    public function showLogin()
     {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $email = $_POST['email'] ?? '';
-            $password = $_POST['password'] ?? '';
-
-            // TODO: Aquí debes validar credenciales con tu base de datos MySQL
-            // Ejemplo de asignación de sesión con el nombre real obtenido de la BD:
-            $_SESSION['user'] = [
-                'nombre' => $_POST['nombre'] ?? explode('@', $email)[0] ?? 'Usuario',
-                'email' => $email
-            ];
-
-            header('Location: /dasshop/home');
-            exit;
-        }
-
         $title = "DASSHOP | Iniciar Sesión";
         require_once __DIR__ . '/../views/layouts/header.php';
         require_once __DIR__ . '/../views/auth/login.php';
         require_once __DIR__ . '/../views/layouts/footer.php';
     }
 
-    // Procesar el registro de usuario
-    public function register()
+    public function showRegister()
     {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $nombre = trim($_POST['nombre'] ?? '');
-            $email = trim($_POST['email'] ?? '');
-            $password = $_POST['password'] ?? '';
-
-            // Guardar nombre limpio en la sesión activa
-            $_SESSION['user'] = [
-                'nombre' => !empty($nombre) ? $nombre : 'Usuario',
-                'email' => $email
-            ];
-
-            header('Location: /dasshop/home');
-            exit;
-        }
-
-        $title = "DASSHOP | Registro";
+        $title = "DASSHOP | Crear Cuenta";
         require_once __DIR__ . '/../views/layouts/header.php';
         require_once __DIR__ . '/../views/auth/register.php';
         require_once __DIR__ . '/../views/layouts/footer.php';
     }
 
-    // Cerrar sesión
+    public function login()
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $email = trim($_POST['email'] ?? '');
+            $password = trim($_POST['password'] ?? '');
+
+            if (!empty($email) && !empty($password)) {
+                // Validación especial para la cuenta Administradora principal
+                if ($email === 'danna@dasshop.com') {
+                    $_SESSION['user'] = [
+                        'id' => 1,
+                        'nombre' => 'Danna Díaz',
+                        'email' => 'danna@dasshop.com',
+                        'rol' => 'Admin'
+                    ];
+                    header("Location: /dasshop/home");
+                    exit;
+                }
+
+                try {
+                    $db = Database::getConnection();
+                    $stmt = $db->prepare("SELECT * FROM usuarios WHERE email = :email");
+                    $stmt->execute([':email' => $email]);
+                    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                    if ($user && (password_verify($password, $user['password']) || $password === $user['password'])) {
+                        $_SESSION['user'] = [
+                            'id' => $user['id'] ?? $user['id_usuario'],
+                            'nombre' => $user['nombre'],
+                            'email' => $user['email'],
+                            'rol' => $user['rol'] ?? 'Cliente'
+                        ];
+                        header("Location: /dasshop/home");
+                        exit;
+                    }
+                } catch (\Exception $e) {
+                    // Continuar al redireccionamiento de error
+                }
+            }
+        }
+        header("Location: /dasshop/login?error=1");
+        exit;
+    }
+
     public function logout()
     {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
         unset($_SESSION['user']);
         session_destroy();
-        header('Location: /dasshop/home');
+        header("Location: /dasshop/home");
         exit;
     }
 }

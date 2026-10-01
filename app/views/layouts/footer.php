@@ -1,15 +1,17 @@
-<footer class="bg-white/60 border-t border-dass-rose/40 py-10 mt-12 text-center text-xs text-gray-500">
-        <div class="max-w-7xl mx-auto px-8 flex flex-col md:flex-row justify-between items-center gap-6">
-            <div class="font-serif italic font-bold text-2xl text-dass-burgundy">
-                Dass<span class="not-italic text-dass-gold">hop</span>
-            </div>
-            <p class="font-light">&copy; 2026 DASSHOP. Todos los derechos reservados.</p>
-            <div class="flex space-x-6 font-medium text-gray-600">
-                <a href="#" class="hover:text-dass-burgundy transition">Colecciones</a>
-                <a href="#" class="hover:text-dass-burgundy transition">Nosotros</a>
-                <a href="#" class="hover:text-dass-burgundy transition">Contacto</a>
-            </div>
+<footer class="bg-white border-t border-pink-100 py-8 mt-auto">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-500 gap-4">
+        <div class="font-serif text-xl font-bold text-dass-burgundy">
+            DASSHOP <span class="font-cursive text-dass-gold font-normal text-2xl lowercase">boutique</span>
         </div>
-    </footer>
+        <div>
+            © <?= date('Y') ?> DASSHOP. Todos los derechos reservados.
+        </div>
+        <div class="flex space-x-6 font-semibold">
+            <a href="/dasshop/productos" class="hover:text-dass-burgundy transition">Colecciones</a>
+            <a href="/dasshop/nosotros" class="hover:text-dass-burgundy transition">Nosotros</a>
+            <a href="/dasshop/contacto" class="hover:text-dass-burgundy transition">Contacto</a>
+        </div>
+    </div>
+</footer>
 </body>
 </html>

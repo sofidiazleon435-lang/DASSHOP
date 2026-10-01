@@ -1,197 +1,146 @@
-<main class="max-w-5xl mx-auto px-4 py-10">
-    <h1 class="font-serif text-3xl font-bold text-dass-burgundy mb-8 text-center">Finalizar Compra</h1>
+<main class="max-w-5xl mx-auto my-12 px-4">
+    <div class="text-center mb-10">
+        <span class="text-xs font-bold uppercase tracking-widest text-dass-gold">Facturación & Entrega</span>
+        <h1 class="font-serif text-3xl font-bold text-dass-burgundy mt-1">Finalizar Compra</h1>
+    </div>
 
-    <form action="/dasshop/carrito/procesar-pago" method="POST" class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <form id="checkout-form" onsubmit="event.preventDefault(); generateReceipt();" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
-        <!-- COLUMNA IZQUIERDA: DATOS DE ENVÍO Y PAGO -->
-        <div class="lg:col-span-7 space-y-6">
-            
-            <!-- 1. Datos del Cliente -->
-            <div class="bg-white/80 backdrop-blur-md p-6 rounded-2xl border border-dass-rose/60 shadow-md space-y-4">
-                <h2 class="font-serif text-lg font-bold text-dass-burgundy border-b border-pink-100 pb-2">1. Datos de Envío</h2>
+        <div class="lg:col-span-2 space-y-6">
+            <!-- INFORMACIÓN COMPLETA DEL TITULAR -->
+            <div class="bg-white p-6 rounded-3xl border border-pink-100 shadow-sm space-y-4">
+                <h3 class="font-serif text-base font-bold text-dass-burgundy">1. Datos del Titular y Envío</h3>
                 
-                <div class="space-y-3 text-xs">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label class="block font-semibold text-gray-700 mb-1">Nombre Completo *</label>
-                        <input type="text" name="nombre_completo" required placeholder="Ej. Danna Díaz"
-                               class="w-full p-3 rounded-xl border border-gray-200 focus:outline-none focus:border-dass-burgundy">
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Nombre Completo del Titular</label>
+                        <input type="text" id="billing-name" required value="<?= htmlspecialchars($_SESSION['user']['nombre'] ?? '') ?>" placeholder="Ej: Danna Sofía Díaz" class="w-full px-4 py-2.5 rounded-xl border border-pink-100 text-xs">
                     </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <div>
-                            <label class="block font-semibold text-gray-700 mb-1">Correo Electrónico *</label>
-                            <input type="email" name="email" required placeholder="ejemplo@correo.com"
-                                   class="w-full p-3 rounded-xl border border-gray-200 focus:outline-none focus:border-dass-burgundy">
-                        </div>
-                        <div>
-                            <label class="block font-semibold text-gray-700 mb-1">Teléfono / WhatsApp *</label>
-                            <input type="tel" name="telefono" required placeholder="300 000 0000"
-                                   class="w-full p-3 rounded-xl border border-gray-200 focus:outline-none focus:border-dass-burgundy">
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        <div class="md:col-span-2">
-                            <label class="block font-semibold text-gray-700 mb-1">Dirección de Entrega *</label>
-                            <input type="text" name="direccion" required placeholder="Calle 123 # 45 - 67"
-                                   class="w-full p-3 rounded-xl border border-gray-200 focus:outline-none focus:border-dass-burgundy">
-                        </div>
-                        <div>
-                            <label class="block font-semibold text-gray-700 mb-1">Ciudad *</label>
-                            <input type="text" id="ciudad-input" name="ciudad" required placeholder="Ej. Bogotá"
-                                   class="w-full p-3 rounded-xl border border-gray-200 focus:outline-none focus:border-dass-burgundy">
-                        </div>
-                    </div>
-
                     <div>
-                        <label class="block font-semibold text-gray-700 mb-1">Notas especiales sobre la prenda o diseño (Opcional):</label>
-                        <textarea name="notas" rows="2" placeholder="Detalles de ubicación del estampado, instrucciones especiales..."
-                                  class="w-full p-3 rounded-xl border border-gray-200 focus:outline-none focus:border-dass-burgundy"></textarea>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Cédula / Documento de Identidad</label>
+                        <input type="text" id="billing-id" required placeholder="Ej: 1012345678" class="w-full px-4 py-2.5 rounded-xl border border-pink-100 text-xs">
                     </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Número de Teléfono / Celular</label>
+                        <input type="tel" id="billing-phone" required placeholder="Ej: +57 300 123 4567" class="w-full px-4 py-2.5 rounded-xl border border-pink-100 text-xs">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Ciudad de Envío</label>
+                        <select id="city-select" onchange="toggleCodOption()" class="w-full px-4 py-2.5 rounded-xl border border-pink-100 text-xs font-bold text-dass-burgundy bg-white">
+                            <option value="Bogotá">Bogotá D.C.</option>
+                            <option value="Medellín">Medellín</option>
+                            <option value="Cali">Cali</option>
+                            <option value="Barranquilla">Barranquilla</option>
+                            <option value="Bucaramanga">Bucaramanga</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Dirección Completa de Entrega</label>
+                    <input type="text" id="billing-address" required placeholder="Ej: Calle 123 # 45 - 67 Apt 302" class="w-full px-4 py-2.5 rounded-xl border border-pink-100 text-xs">
                 </div>
             </div>
 
-            <!-- 2. Método de Pago -->
-            <div class="bg-white/80 backdrop-blur-md p-6 rounded-2xl border border-dass-rose/60 shadow-md space-y-4">
-                <h2 class="font-serif text-lg font-bold text-dass-burgundy border-b border-pink-100 pb-2">2. Método de Pago</h2>
-                
-                <div class="space-y-3 text-xs">
-                    <!-- Opción 1: Nequi / Bancolombia / QR -->
-                    <label class="flex items-start gap-3 p-3.5 rounded-xl border border-gray-200 cursor-pointer hover:border-dass-burgundy transition bg-white">
-                        <input type="radio" id="pay-transfer" name="metodo_pago" value="transferencia" checked onchange="togglePayment('qr')" class="mt-0.5 text-dass-burgundy focus:ring-dass-burgundy">
-                        <div>
-                            <span class="font-bold text-gray-800">Transferencia / QR (Nequi, Daviplata, Bancolombia)</span>
-                            <p class="text-gray-500 text-[11px]">Pago rápido sin comisiones. Recibirás los datos para transferencia tras confirmar.</p>
+            <!-- MÉTODOS DE PAGO -->
+            <div class="bg-white p-6 rounded-3xl border border-pink-100 shadow-sm space-y-4">
+                <h3 class="font-serif text-base font-bold text-dass-burgundy">2. Forma de Pago</h3>
+
+                <div class="space-y-3">
+                    <label class="flex items-center justify-between p-4 border border-pink-100 rounded-2xl cursor-pointer hover:bg-pink-50/40 transition">
+                        <div class="flex items-center space-x-3">
+                            <input type="radio" name="pay_type" value="nequi" checked onclick="showPayDetails('nequi')" class="text-dass-burgundy">
+                            <span class="text-xs font-bold text-gray-800">Nequi / Daviplata</span>
                         </div>
+                        <span class="text-[10px] text-dass-gold font-bold uppercase">Transferencia</span>
                     </label>
 
-                    <!-- Opción 2: Tarjeta de Crédito / Débito -->
-                    <label class="flex items-start gap-3 p-3.5 rounded-xl border border-gray-200 cursor-pointer hover:border-dass-burgundy transition bg-white">
-                        <input type="radio" name="metodo_pago" value="tarjeta" onchange="togglePayment('card')" class="mt-0.5 text-dass-burgundy focus:ring-dass-burgundy">
-                        <div>
-                            <span class="font-bold text-gray-800">Tarjeta de Crédito / Débito</span>
-                            <p class="text-gray-500 text-[11px]">Procesamiento seguro con Visa, Mastercard, American Express.</p>
+                    <label class="flex items-center justify-between p-4 border border-pink-100 rounded-2xl cursor-pointer hover:bg-pink-50/40 transition">
+                        <div class="flex items-center space-x-3">
+                            <input type="radio" name="pay_type" value="pse" onclick="showPayDetails('pse')" class="text-dass-burgundy">
+                            <span class="text-xs font-bold text-gray-800">PSE / Tarjeta Débito-Crédito</span>
                         </div>
+                        <span class="text-[10px] text-gray-400 font-bold uppercase">En Línea</span>
                     </label>
 
-                    <!-- Opción 3: Pago Contra Entrega (Solo Bogotá) -->
-                    <label id="container-cod" class="flex items-start gap-3 p-3.5 rounded-xl border border-gray-200 bg-gray-50 transition opacity-60">
-                        <input type="radio" id="pay-cod" name="metodo_pago" value="contraentrega" disabled onchange="togglePayment('cod')" class="mt-0.5 text-dass-burgundy focus:ring-dass-burgundy">
-                        <div>
-                            <span class="font-bold text-gray-800">Pago Contra Entrega 🚚</span>
-                            <p id="cod-text" class="text-gray-500 text-[11px]">Pagas en efectivo o transferencia al recibir tu pedido. <strong>(Solo disponible para Bogotá)</strong>.</p>
+                    <label id="cod-container" class="flex items-center justify-between p-4 border border-pink-100 rounded-2xl cursor-pointer hover:bg-pink-50/40 transition">
+                        <div class="flex items-center space-x-3">
+                            <input type="radio" name="pay_type" id="cod-radio" value="cod" onclick="showPayDetails('cod')" class="text-dass-burgundy">
+                            <span class="text-xs font-bold text-gray-800">Pago Contra Entrega</span>
                         </div>
+                        <span id="cod-badge" class="text-[10px] text-green-600 font-bold uppercase">Disponible (Solo Bogotá)</span>
                     </label>
-
-                    <!-- Detalle Tarjeta -->
-                    <div id="card-details" class="hidden space-y-3 p-4 bg-gray-50 rounded-xl border border-gray-200 mt-2">
-                        <div>
-                            <label class="block font-semibold text-gray-700 mb-1">Número de Tarjeta</label>
-                            <input type="text" placeholder="4000 0000 0000 0000" maxlength="19" class="w-full p-2.5 rounded-lg border border-gray-200 bg-white">
-                        </div>
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="block font-semibold text-gray-700 mb-1">Expiración (MM/AA)</label>
-                                <input type="text" placeholder="12/28" maxlength="5" class="w-full p-2.5 rounded-lg border border-gray-200 bg-white">
-                            </div>
-                            <div>
-                                <label class="block font-semibold text-gray-700 mb-1">CVC / CVV</label>
-                                <input type="password" placeholder="123" maxlength="4" class="w-full p-2.5 rounded-lg border border-gray-200 bg-white">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-
-        <!-- COLUMNA DERECHA: RESUMEN DE COMPRA -->
-        <div class="lg:col-span-5 space-y-6">
-            <div class="bg-white/90 backdrop-blur-md p-6 rounded-2xl border border-dass-rose/60 shadow-md space-y-4 sticky top-6">
-                <h2 class="font-serif text-lg font-bold text-dass-burgundy border-b border-pink-100 pb-2">Resumen del Pedido</h2>
-
-                <div class="divide-y divide-gray-100 max-h-60 overflow-y-auto pr-1">
-                    <?php foreach ($cart as $item): ?>
-                        <div class="py-3 flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-lg flex items-center justify-center border text-white font-mono text-[10px] shadow-sm shrink-0" 
-                                 style="background-color: <?= htmlspecialchars($item['color'] ?? '#4A1525') ?>">
-                                Prenda
-                            </div>
-                            <div class="flex-1 text-xs">
-                                <h4 class="font-bold text-gray-800"><?= htmlspecialchars($item['nombre']) ?></h4>
-                                <p class="text-gray-500 text-[11px]">Corte: <?= htmlspecialchars($item['corte'] ?? 'Standard') ?></p>
-                                <p class="text-gray-500 text-[11px]">Cantidad: <?= $item['cantidad'] ?></p>
-                            </div>
-                            <span class="text-xs font-bold text-dass-burgundy">
-                                $<?= number_format($item['precio'] * $item['cantidad'], 0, ',', '.') ?>
-                            </span>
-                        </div>
-                    <?php endforeach; ?>
                 </div>
 
-                <div class="space-y-2 border-t border-gray-200 pt-4 text-xs">
-                    <div class="flex justify-between text-gray-600">
-                        <span>Subtotal prendas:</span>
-                        <span>$<?= number_format($subtotal, 0, ',', '.') ?> COP</span>
-                    </div>
-                    <div class="flex justify-between text-gray-600">
-                        <span>Envío a domicilio:</span>
-                        <span>$<?= number_format($envio, 0, ',', '.') ?> COP</span>
-                    </div>
-                    <div class="flex justify-between text-base font-bold text-dass-burgundy border-t border-gray-200 pt-3">
-                        <span>Total a pagar:</span>
-                        <span>$<?= number_format($total, 0, ',', '.') ?> COP</span>
-                    </div>
+                <div id="pay-info-box" class="p-4 bg-pink-50/50 rounded-2xl border border-pink-100 text-xs text-gray-600">
+                    <p class="font-bold text-dass-burgundy mb-1">Transferir a Nequi / Daviplata:</p>
+                    <p class="text-dass-gold font-bold">300 000 0000 - DASSHOP S.A.S</p>
                 </div>
 
-                <input type="hidden" name="subtotal" value="<?= $subtotal ?>">
-                <input type="hidden" name="envio" value="<?= $envio ?>">
-                <input type="hidden" name="total" value="<?= $total ?>">
-
-                <button type="submit" class="w-full bg-dass-burgundy text-white text-xs font-medium py-3.5 rounded-full shadow-lg hover:bg-opacity-95 transition mt-4">
-                    Confirmar y Pagar $<?= number_format($total, 0, ',', '.') ?> COP
+                <button type="submit" class="w-full bg-dass-burgundy text-white text-xs font-bold py-3.5 rounded-full shadow hover:bg-opacity-90 transition mt-4">
+                    Confirmar Orden & Generar Comprobante
                 </button>
             </div>
         </div>
 
+        <!-- RESUMEN -->
+        <div class="bg-white p-6 rounded-3xl border border-pink-100 shadow-sm h-fit">
+            <h3 class="font-serif text-lg font-bold text-dass-burgundy mb-4">Resumen</h3>
+            <?php 
+                $total = 0;
+                foreach($cart as $item) { $total += $item['precio'] * $item['cantidad']; }
+                if ($total == 0) $total = 65000;
+            ?>
+            <div class="space-y-2 text-xs text-gray-600 border-b border-gray-100 pb-4">
+                <div class="flex justify-between"><span>Subtotal</span><span>$<?= number_format($total, 0, ',', '.') ?> COP</span></div>
+                <div class="flex justify-between"><span>Envío</span><span class="text-green-600 font-semibold">Gratis</span></div>
+            </div>
+            <div class="flex justify-between items-center pt-4 font-bold text-sm text-dass-burgundy">
+                <span>Total a Pagar</span>
+                <span>$<?= number_format($total, 0, ',', '.') ?> COP</span>
+            </div>
+        </div>
     </form>
 </main>
 
 <script>
-    const ciudadInput = document.getElementById('ciudad-input');
-    const payCod = document.getElementById('pay-cod');
-    const containerCod = document.getElementById('container-cod');
-    const codText = document.getElementById('cod-text');
-    const payTransfer = document.getElementById('pay-transfer');
+function toggleCodOption() {
+    const city = document.getElementById('city-select').value;
+    const codRadio = document.getElementById('cod-radio');
+    const codBadge = document.getElementById('cod-badge');
 
-    // Validación interactiva de ciudad para activar/desactivar Pago Contra Entrega
-    ciudadInput.addEventListener('input', (e) => {
-        const val = e.target.value.trim().toLowerCase();
-        
-        // Normaliza para detectar "bogota" o "bogotá"
-        if (val.includes('bogota') || val.includes('bogotá')) {
-            payCod.disabled = false;
-            containerCod.classList.remove('opacity-60', 'bg-gray-50');
-            containerCod.classList.add('bg-white', 'cursor-pointer', 'border-pink-200');
-            codText.innerHTML = 'Pagas en efectivo o transferencia al recibir tu pedido. <span class="text-green-600 font-bold">¡Disponible en Bogotá!</span>';
-        } else {
-            if (payCod.checked) {
-                payTransfer.checked = true;
-                togglePayment('qr');
-            }
-            payCod.disabled = true;
-            containerCod.classList.add('opacity-60', 'bg-gray-50');
-            containerCod.classList.remove('bg-white', 'cursor-pointer', 'border-pink-200');
-            codText.innerHTML = 'Pagas en efectivo o transferencia al recibir tu pedido. <strong>(Solo disponible para Bogotá)</strong>.';
-        }
-    });
-
-    function togglePayment(type) {
-        const cardDetails = document.getElementById('card-details');
-        if (type === 'card') {
-            cardDetails.classList.remove('hidden');
-        } else {
-            cardDetails.classList.add('hidden');
-        }
+    if (city !== 'Bogotá') {
+        codRadio.disabled = true;
+        codRadio.checked = false;
+        codBadge.innerText = 'No Disponible fuera de Bogotá';
+        codBadge.className = 'text-[10px] text-red-500 font-bold uppercase';
+    } else {
+        codRadio.disabled = false;
+        codBadge.innerText = 'Disponible (Solo Bogotá)';
+        codBadge.className = 'text-[10px] text-green-600 font-bold uppercase';
     }
+}
+
+function showPayDetails(type) {
+    const box = document.getElementById('pay-info-box');
+    if (type === 'nequi') {
+        box.innerHTML = '<p class="font-bold text-dass-burgundy mb-1">Transferir a Nequi / Daviplata:</p><p class="text-dass-gold font-bold">300 000 0000 - DASSHOP S.A.S</p>';
+    } else if (type === 'pse') {
+        box.innerHTML = '<p class="font-bold text-dass-burgundy mb-1">Pago en Línea PSE:</p><p class="text-gray-500">Acceso a pasarela bancaria nacional.</p>';
+    } else if (type === 'cod') {
+        box.innerHTML = '<p class="font-bold text-dass-burgundy mb-1">Pago Contra Entrega (Efectivo):</p><p class="text-gray-500">Entregas únicamente en Bogotá D.C.</p>';
+    }
+}
+
+function generateReceipt() {
+    const name = document.getElementById('billing-name').value;
+    const idNum = document.getElementById('billing-id').value;
+    const phone = document.getElementById('billing-phone').value;
+    const city = document.getElementById('city-select').value;
+    const address = document.getElementById('billing-address').value;
+
+    alert('¡ORDEN REGISTRADA CON ÉXITO!\n\n-----------------------------\nCOMPROBANTE DASSHOP\n-----------------------------\nTitular: ' + name + '\nCédula: ' + idNum + '\nTeléfono: ' + phone + '\nCiudad: ' + city + '\nDirección: ' + address + '\n\nEstado: Procesando Pedido\n¡Gracias por tu compra en DASSHOP!');
+    window.location.href = '/dasshop/home';
+}
 </script>
